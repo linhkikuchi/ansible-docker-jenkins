@@ -1,0 +1,38 @@
+---
+- name: upgrade all packages
+  yum: name=* state=latest
+
+- name: Disable SELinux
+  selinux: state=disabled
+  tags:
+  - setup
+
+- name: install curl, git
+  yum2: name="{{ item }}" state=latest
+  with_items:
+    - curl
+    - git
+  tags:
+  - setup
+
+- name: Create .m2 directory to share maven repo between slaves
+  file:
+    path: /var/jenkins/.m2
+    state: directory
+    owner: jenkins
+    group: jenkins
+    mode: 0755
+  tags:
+  - setup
+  - m2
+
+- name: copy settings config for maven repo
+  copy:
+    src: "{{ role_path }}/files/settings.xml"
+    dest: /var/jenkins/.m2
+    owner: jenkins
+    group: jenkins
+    mode: 0755
+  tags:
+  - setup
+  - m2

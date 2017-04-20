@@ -1,0 +1,42 @@
+---
+- name: Create jenkins-slave dir
+  file:
+    path: "{{ docker_path }}/jenkins-slave"
+    state: directory
+    owner: root
+    group: root
+    mode: 0644
+
+- name: copy public key to jenkins-slave dir
+  command: cp /root/.ssh/id_rsa.pub "{{ docker_path }}/jenkins-slave/authorized_keys"
+
+- name: copy dockerfile remote host
+  copy:
+    src: "{{ role_path }}/files/jenkins-slave.dockerfile"
+    dest: "{{ docker_path }}/jenkins-slave/Dockerfile"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: copy all config files for docker
+  copy:
+    src: "{{ item }}"
+    dest: "{{ docker_path }}/jenkins-slave"
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - "{{ role_path }}/files/settings.xml"
+
+- name: Build jenkins slave
+  docker_image:
+    path: "{{ docker_path }}/jenkins-slave"
+    name: jenkins-slave
+    docker_host: "tcp://{{ dds_name }}:2376"
+    cert_path: "{{ dds_cert_path }}/cert.pem"
+    cacert_path: "{{ dds_cert_path }}/ca.pem"
+    key_path: "{{ dds_cert_path }}/key.pem"
+    tls_verify: yes
+    use_tls: verify
+    tls_hostname: "{{ dds_name }}"
+    tag: latest

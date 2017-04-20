@@ -1,0 +1,5 @@
+---
+dds_cert_path: /root/.docker
+docker_path: /var/docker
+jenkins_backup_vol: /jenkins-backup
+backup_on_rundeck_path: /var/rundeck/jenkins-backups

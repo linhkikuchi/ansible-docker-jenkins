@@ -1,0 +1,96 @@
+---
+# Run this one for https jenkins
+# gen keys in ~/.ssh/id_rsa, if file already exists, ignore the eror
+# If not, gen a new key
+- name: Generate rsa keys on host
+  command: ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
+  ignore_errors: yes
+
+- name: Create master_jenkins dir
+  file:
+    path: "{{ docker_path }}/jenkins_master"
+    state: directory
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy keys from host to master_jenkins dir
+  command: "cp /root/.ssh/id_rsa {{ docker_path }}/jenkins_master"
+
+- name: Copy keys from host to master_jenkins dir
+  command: "cp /root/.ssh/id_rsa.pub {{ docker_path }}/jenkins_master"
+
+- name: copy jenkins_master dockerfile to remote host
+  copy:
+    src: "{{ role_path }}/files/jenkins_master.dockerfile"
+    dest: "{{ docker_path }}/jenkins_master/Dockerfile"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: copy all config files for docker
+  copy:
+    src: "{{ item }}"
+    dest: "{{ docker_path }}/jenkins_master"
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - "{{ role_path }}/files/settings.xml"
+
+- name: copy jenkins-backup.tar to backup volumes /jenkins-backup
+  copy:
+    src: "{{ item }}"
+    dest: /jenkins-backup
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    # for rebuilding existing server, comment out for new server
+    #- "{{ role_path }}/files/jenkins-backup.tar.gz"
+    - "{{ role_path }}/files/place_holder.txt"
+  # ignore error in case of new jenkins
+  ignore_errors: yes
+
+- name: untar jenkins-backup.tar
+  command: tar xvzf jenkins-backup.tar.gz
+  args:
+    chdir: /jenkins-backup/
+  # ignore error in case of new jenkins
+  ignore_errors: yes
+
+- name: Build jenkins master 
+  docker_image:
+    path: "{{ docker_path }}/jenkins_master"
+    name: "jenkins-master-{{ server_name }}"
+    docker_host: "tcp://{{ dds_name }}:2376"
+    cert_path: "{{ dds_cert_path }}/cert.pem"
+    cacert_path: "{{ dds_cert_path }}/ca.pem"
+    key_path: "{{ dds_cert_path }}/key.pem"
+    tls_verify: yes
+    use_tls: verify
+    tls_hostname: "{{ dds_name }}"
+    tag: latest
+
+- name: Start jenkins master container
+  docker_container:
+    name: "jenkins-master-{{ server_name }}"
+    image: "jenkins-master-{{ server_name }}:latest" #image_name:tag
+    docker_host: "tcp://{{ dds_name }}:2376"
+    cert_path: "{{ dds_cert_path }}/cert.pem"
+    cacert_path: "{{ dds_cert_path }}/ca.pem"
+    key_path: "{{ dds_cert_path }}/key.pem"
+    tls_verify: yes
+    tls_hostname: "{{ dds_name }}"
+    network_mode: host
+    etc_hosts: >
+      {
+        "smtp.net" : "123.123.123.123"
+      }
+    ports:
+      - "443:443"
+      - "25:25"
+    volumes: 
+      - /etc/pki/tls/certs:/etc/pki/tls/certs
+      - /etc/pki/tls/private:/etc/pki/tls/private
+      - /jenkins-backup:/var/jenkins_home

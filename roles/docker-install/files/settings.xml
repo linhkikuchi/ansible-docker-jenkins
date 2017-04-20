@@ -1,0 +1,53 @@
+<settings>
+        <servers>
+                <server>
+                        <id>snapshot-repo</id>
+                        <username>{{ user_deploy }}</username>
+                        <password>{{ password }}</password>
+                </server>
+                <server>
+                        <id>release-repo</id>
+                        <username>{{ user_deploy }}</username>
+                        <password>{{ password }}</password>
+                </server>
+        </servers>
+        <mirrors>
+                <mirror>
+                        <id>nexus</id>
+                        <mirrorOf>*</mirrorOf>
+                        <url>{{ nexus_public_repo_url }}</url>
+                </mirror>
+        </mirrors>
+        <profiles>
+                <profile>
+                        <id>nexus</id>
+                        <repositories>
+                                <repository>
+                                        <id>central</id>
+                                        <url>http://central</url>
+                                        <releases>
+                                                <enabled>true</enabled>
+                                        </releases>
+                                        <snapshots>
+                                                <enabled>true</enabled>
+                                        </snapshots>
+                                </repository>
+                        </repositories>
+                        <pluginRepositories>
+                                <pluginRepository>
+                                        <id>central</id>
+                                        <url>http://central</url>
+                                        <releases>
+                                                <enabled>true</enabled>
+                                        </releases>
+                                        <snapshots>
+                                                <enabled>true</enabled>
+                                        </snapshots>
+                                </pluginRepository>
+                        </pluginRepositories>
+                </profile>
+        </profiles>
+        <activeProfiles>
+                <activeProfile>nexus</activeProfile>
+        </activeProfiles>
+</settings>

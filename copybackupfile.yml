@@ -1,0 +1,11 @@
+# if you want to create new jenkins from current backup
+# run this to copy backup jenkins jar to the role folder
+# run with args --extra-vars "server_name=ape" (ape, bruce, commons, localbrain, QA)
+
+- hosts: localhost
+  tasks:
+      # copy latest file in the backup folder
+      - shell: yes | cp -rf "`ls -tr | tail -1`" "{{ playbook_dir }}/roles/jenkins-docker/master/files/jenkins-backup.tar.gz"
+        args:
+          chdir: "/home/rundeck/jenkins-backups/{{ server_name }}-jenkins"
+
