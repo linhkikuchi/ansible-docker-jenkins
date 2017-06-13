@@ -3,5 +3,6 @@
   user: root
   gather_facts: no
   roles:
+    - common
     - docker-install
     - docker-tsl

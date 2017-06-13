@@ -1,0 +1,19 @@
+- name: disable postfix
+  service:
+    name: postfix
+    enabled: no
+    state: stopped
+
+- name: enable sendmail
+  service:
+    name: sendmail
+    enabled: yes
+    state: started
+
+- name: reload docker daemon
+  command: systemctl daemon-reload
+
+- name: restart docker service
+  service:
+    name: docker
+    state: restarted
