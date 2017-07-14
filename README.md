@@ -27,9 +27,12 @@ ansible-playbook docker.yml -i hosts -u root --extra-vars "dds_name=tool-jenkins
 ```
 
 Jenkins master need to call slave with extra hosts option (Jenkins config)
+## VOLUME
+- /var/jenkins_home: for all jenkins config and plugins
+- /usr/share/jenkins/jenkins.war: to store latest jenkins in case jenkins is updated on UI
 
 To start docker manually on server:
 ```
-docker run --name jenkins-master -v /etc/pki/tls/certs:/etc/pki/tls/certs -v /etc/pki/tls/private:/etc/pki/tls/private -v /jenkins-backup:/var/jenkins_home --publish 443:443 -p 25:25 -d jenkins-master
+docker run --name jenkins-master -v /etc/pki/tls/certs:/etc/pki/tls/certs -v /etc/pki/tls/private:/etc/pki/tls/private -v /jenkins-backup:/var/jenkins_home -v /jenkins-war/jenkins.war:/usr/share/jenkins/jenkins.war --publish 443:443 -p 25:25 -d jenkins-master
 ```
 
